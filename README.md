@@ -1,5 +1,7 @@
 # API Proxy UI
 
+Admittedly vibe-coded this thing, but I did design the over arching architecture, i.e. services and how they connect, and how they should function. So while Claude did make the UI/UX, I did direct it how I wanted and architected the code design itself.
+
 Admin console for the API Proxy — monitor requests, manage routes, orgs, service accounts, and rate limits.
 
 ## Requirements
