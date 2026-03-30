@@ -1,0 +1,225 @@
+.filter-root {
+  position: relative;
+  font-family: 'Outfit', sans-serif;
+}
+
+/* ─── Trigger ────────────────────────────────────────────── */
+.trigger {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 12px;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  transition: color 0.2s, border-color 0.2s;
+  white-space: nowrap;
+}
+
+.trigger:hover,
+.trigger.active {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.trigger-count {
+  background: var(--accent);
+  color: var(--bg);
+  font-size: 10px;
+  padding: 1px 5px;
+  border-radius: 10px;
+  line-height: 1.4;
+}
+
+.chevron {
+  transition: transform 0.2s;
+  margin-left: 2px;
+}
+
+.chevron.rotated {
+  transform: rotate(180deg);
+}
+
+/* ─── Panel ──────────────────────────────────────────────── */
+.panel {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 100;
+  width: 400px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  animation: panel-in 0.15s ease both;
+}
+
+@keyframes panel-in {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ─── Search ─────────────────────────────────────────────── */
+.panel-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-muted);
+}
+
+.search-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-family: 'Outfit', sans-serif;
+  font-size: 12px;
+  color: var(--text);
+  caret-color: var(--accent);
+}
+
+.search-input::placeholder {
+  color: var(--text-muted);
+}
+
+/* ─── Actions ────────────────────────────────────────────── */
+.panel-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.action-btn {
+  background: none;
+  border: none;
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 2px 0;
+  transition: color 0.2s;
+}
+
+.action-btn:hover {
+  color: var(--accent);
+}
+
+.panel-count {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  color: var(--text-muted);
+}
+
+/* ─── Route list ─────────────────────────────────────────── */
+.route-list {
+  max-height: 280px;
+  overflow-y: auto;
+  padding: 4px 0;
+}
+
+.route-list::-webkit-scrollbar {
+  width: 4px;
+}
+
+.route-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.route-list::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 2px;
+}
+
+.empty {
+  font-size: 12px;
+  color: var(--text-muted);
+  text-align: center;
+  padding: 16px;
+  margin: 0;
+}
+
+.route-item {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 7px 12px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.route-item:hover {
+  background: rgba(200, 146, 42, 0.05);
+}
+
+.route-item.selected {
+  background: rgba(200, 146, 42, 0.04);
+}
+
+/* ─── Checkbox ───────────────────────────────────────────── */
+.checkbox {
+  width: 14px;
+  height: 14px;
+  border: 1px solid var(--border);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.checkbox.checked {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--bg);
+}
+
+/* ─── Method badge ───────────────────────────────────────── */
+.method-badge {
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.05em;
+  padding: 2px 5px;
+  flex-shrink: 0;
+  font-weight: 500;
+}
+
+.method--get    { color: #3a8c62; background: rgba(58,140,98,0.12); }
+.method--post   { color: #3a6e9e; background: rgba(58,110,158,0.12); }
+.method--put    { color: #c8922a; background: rgba(200,146,42,0.12); }
+.method--patch  { color: #7a5ea0; background: rgba(122,94,160,0.12); }
+.method--delete { color: #9e3a3a; background: rgba(158,58,58,0.12); }
+
+/* ─── Pattern + URL ──────────────────────────────────────── */
+.route-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.route-pattern {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.route-url {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

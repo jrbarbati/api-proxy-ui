@@ -1,0 +1,126 @@
+<main class="main">
+  @if (loading()) {
+    <div class="loading-state">
+      <svg class="spin" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+      </svg>
+      <span>Loading…</span>
+    </div>
+  } @else {
+
+    <!-- Toolbar -->
+    <div class="toolbar">
+      <app-date-range-selector
+        (presetChange)="onPresetChange($event)"
+        (rangeChange)="onRangeChange($event)"
+      />
+      <div class="toolbar-right">
+        <button
+          class="toggle-429"
+          [class.active]="exclude429s()"
+          (click)="exclude429s.update(v => !v)"
+          [title]="exclude429s() ? 'Click to include 429 rate-limit responses' : 'Click to exclude 429 rate-limit responses'"
+        >
+          <span class="badge-429">429</span>
+          {{ exclude429s() ? 'Excluded' : 'Included' }}
+        </button>
+        <app-route-filter [routes]="routes()" (selectionChange)="onRouteFilterChange($event)" />
+
+        <!-- Refresh controls -->
+        <div class="refresh-controls">
+          @if (lastRefreshed()) {
+            <span class="last-refreshed">{{ formatRefreshTime(lastRefreshed()!) }}</span>
+          }
+          <div class="live-indicator">
+            <span class="live-dot-wrap">
+              <span class="live-dot-ping"></span>
+              <span class="live-dot"></span>
+            </span>
+            live
+          </div>
+          <button
+            class="refresh-btn"
+            [class.just-refreshed]="justRefreshed()"
+            [disabled]="refreshing()"
+            (click)="manualRefresh()"
+            title="Refresh now · auto every 2 min"
+          >
+            <!-- Countdown ring -->
+            <svg class="ring-svg" viewBox="0 0 32 32" fill="none">
+              <circle cx="16" cy="16" r="11" stroke="var(--border)" stroke-width="1" />
+              @if (ringVisible()) {
+                <circle
+                  class="ring-progress"
+                  cx="16" cy="16" r="11"
+                  fill="none"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  stroke-dasharray="69.12"
+                  stroke-dashoffset="69.12"
+                />
+              }
+            </svg>
+            <!-- Icon -->
+            <svg
+              class="refresh-icon"
+              [class.spin]="refreshing()"
+              width="13" height="13"
+              viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+            >
+              <polyline points="23 4 23 10 17 10"/>
+              <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+            </svg>
+          </button>
+        </div>
+
+        <span class="result-count">
+          @if (refreshing()) {
+            <svg class="spin" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+            </svg>
+          } @else {
+            {{ totalRequests() | number }} request{{ totalRequests() !== 1 ? 's' : '' }}
+          }
+        </span>
+      </div>
+    </div>
+
+    <!-- Stat cards -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <p class="stat-label">Total Requests</p>
+        <p class="stat-value">{{ totalRequests() | number }}</p>
+      </div>
+      <div class="stat-card">
+        <p class="stat-label">Avg Latency</p>
+        <p class="stat-value">{{ avgLatency() }}<span class="stat-unit">ms</span></p>
+      </div>
+      <div class="stat-card">
+        <p class="stat-label">p95 Latency</p>
+        <p class="stat-value">{{ p95Latency() }}<span class="stat-unit">ms</span></p>
+      </div>
+      <div class="stat-card">
+        <p class="stat-label">Error Rate</p>
+        <p class="stat-value">{{ errorRate() }}<span class="stat-unit">%</span></p>
+      </div>
+    </div>
+
+    <!-- Charts -->
+    <div class="charts-row">
+      <div class="chart-card chart-card--wide">
+        <p class="chart-title">Latency over time</p>
+        <div class="chart-body">
+          <app-latency-chart [data]="filteredRequests()" />
+        </div>
+      </div>
+      <div class="chart-card">
+        <p class="chart-title">Status codes by hour</p>
+        <div class="chart-body">
+          <app-status-chart [data]="filteredRequests()" />
+        </div>
+      </div>
+    </div>
+
+  }
+</main>

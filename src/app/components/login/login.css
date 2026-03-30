@@ -1,0 +1,379 @@
+/* ─── Page ──────────────────────────────────────────────── */
+.page {
+  min-height: 100vh;
+  background-color: var(--bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  font-family: 'Outfit', sans-serif;
+  transition: background-color 0.25s ease;
+}
+
+/* ─── Page-level actions (theme toggle) ─────────────────── */
+.page-actions {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 10;
+}
+
+/* ─── Background dot grid ───────────────────────────────── */
+.bg-dots {
+  position: fixed;
+  inset: 0;
+  background-image: radial-gradient(circle, var(--dots-color) 1px, transparent 1px);
+  background-size: 28px 28px;
+  opacity: 0.5;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+
+/* ─── Ambient orbs ──────────────────────────────────────── */
+.orb {
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(90px);
+  pointer-events: none;
+}
+
+.orb-1 {
+  width: 520px;
+  height: 520px;
+  background: radial-gradient(circle, var(--orb-1), transparent 70%);
+  top: -160px;
+  left: -160px;
+  animation: drift 14s ease-in-out infinite alternate;
+}
+
+.orb-2 {
+  width: 420px;
+  height: 420px;
+  background: radial-gradient(circle, var(--orb-2), transparent 70%);
+  bottom: -120px;
+  right: -120px;
+  animation: drift 16s ease-in-out infinite alternate-reverse;
+}
+
+@keyframes drift {
+  from { transform: translate(0, 0); }
+  to   { transform: translate(30px, 20px); }
+}
+
+/* ─── Container ─────────────────────────────────────────── */
+.container {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 28px;
+  width: 100%;
+  max-width: 400px;
+  padding: 24px 16px;
+}
+
+/* ─── Branding ──────────────────────────────────────────── */
+.branding {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  animation: fade-up 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.logo-mark {
+  color: var(--accent);
+  opacity: 0.9;
+  animation: pulse-mark 4s ease-in-out infinite;
+}
+
+@keyframes pulse-mark {
+  0%, 100% { opacity: 0.9; }
+  50%       { opacity: 0.55; }
+}
+
+.logo-text {
+  font-family: 'DM Mono', monospace;
+  font-size: 13px;
+  font-weight: 400;
+  letter-spacing: 0.3em;
+  color: var(--text);
+  margin: 0;
+  transition: color 0.25s ease;
+}
+
+.logo-rule {
+  width: 36px;
+  height: 1px;
+  background: var(--accent);
+  opacity: 0.5;
+}
+
+.logo-sub {
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin: 0;
+  transition: color 0.25s ease;
+}
+
+/* ─── Card ───────────────────────────────────────────────── */
+.card-enter {
+  width: 100%;
+  animation: fade-up 0.55s 0.15s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.card {
+  width: 100%;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  box-shadow:
+    0 0 0 1px rgba(200, 146, 42, 0.04),
+    0 24px 60px rgba(0, 0, 0, 0.12);
+  padding: 36px 32px;
+  transition: background-color 0.25s ease, border-color 0.25s ease;
+}
+
+.card.shake {
+  animation: shake 0.55s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+
+/* ─── Form ───────────────────────────────────────────────── */
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+/* ─── Field ──────────────────────────────────────────────── */
+.field {
+  position: relative;
+  padding-top: 22px;
+  margin-bottom: 24px;
+}
+
+.field-label {
+  position: absolute;
+  top: 22px;
+  left: 0;
+  font-size: 14px;
+  color: var(--text-muted);
+  transition:
+    top 0.22s cubic-bezier(0.4, 0, 0.2, 1),
+    font-size 0.22s cubic-bezier(0.4, 0, 0.2, 1),
+    color 0.22s cubic-bezier(0.4, 0, 0.2, 1),
+    letter-spacing 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: none;
+}
+
+.field.focused .field-label,
+.field.filled .field-label {
+  top: 2px;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.field.focused .field-label {
+  color: var(--accent);
+}
+
+.field-input-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.field-input {
+  flex: 1;
+  width: 100%;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--border);
+  padding: 6px 0;
+  font-size: 14px;
+  font-family: 'Outfit', sans-serif;
+  color: var(--text);
+  outline: none;
+  caret-color: var(--accent);
+  transition: border-color 0.25s ease, color 0.25s ease;
+}
+
+.field-input::placeholder {
+  color: transparent;
+}
+
+/* Animated bottom line */
+.field-line {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 0;
+  height: 1px;
+  background: var(--accent);
+  transition: width 0.28s cubic-bezier(0.4, 0, 0.2, 1), left 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.field.focused .field-line {
+  width: 100%;
+  left: 0;
+}
+
+/* ─── Eye button ─────────────────────────────────────────── */
+.eye-btn {
+  background: none;
+  border: none;
+  padding: 4px;
+  color: var(--text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  transition: color 0.2s;
+  flex-shrink: 0;
+}
+
+.eye-btn:hover {
+  color: var(--accent);
+}
+
+/* ─── Error message ──────────────────────────────────────── */
+.error-msg {
+  font-size: 12px;
+  color: var(--error);
+  background: var(--error-bg);
+  padding: 0 10px;
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transform: translateY(-4px);
+  transition:
+    max-height 0.25s ease,
+    opacity 0.25s ease,
+    transform 0.25s ease,
+    padding 0.25s ease;
+  border-left: 2px solid var(--error);
+  border-radius: 0 2px 2px 0;
+  margin-bottom: 0;
+}
+
+.error-msg.visible {
+  max-height: 60px;
+  opacity: 1;
+  transform: translateY(0);
+  padding: 8px 10px;
+  margin-bottom: 20px;
+}
+
+/* ─── Submit button ──────────────────────────────────────── */
+.btn-submit {
+  position: relative;
+  width: 100%;
+  margin-top: 4px;
+  padding: 12px 24px;
+  background: transparent;
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  cursor: pointer;
+  overflow: hidden;
+  transition: color 0.25s, background 0.25s, border-color 0.25s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.btn-submit::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--accent);
+  transform: translateX(-102%);
+  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 0;
+}
+
+.btn-submit:hover:not(:disabled)::before {
+  transform: translateX(0);
+}
+
+.btn-submit:hover:not(:disabled) {
+  color: var(--bg-card);
+}
+
+.btn-submit:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.btn-text,
+.btn-arrow {
+  position: relative;
+  z-index: 1;
+  transition: opacity 0.2s, transform 0.2s;
+}
+
+.btn-submit:hover:not(:disabled) .btn-arrow {
+  transform: translateX(4px);
+}
+
+.btn-spinner {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transform: scale(0.8);
+  transition: opacity 0.2s, transform 0.2s;
+}
+
+.btn-spinner svg {
+  animation: spin 0.9s linear infinite;
+}
+
+.btn-submit.loading .btn-text,
+.btn-submit.loading .btn-arrow {
+  opacity: 0;
+  transform: translateY(6px);
+}
+
+.btn-submit.loading .btn-spinner {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* ─── Keyframes ──────────────────────────────────────────── */
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  12%       { transform: translateX(-7px); }
+  24%       { transform: translateX(7px); }
+  36%       { transform: translateX(-5px); }
+  48%       { transform: translateX(5px); }
+  60%       { transform: translateX(-3px); }
+  72%       { transform: translateX(3px); }
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}

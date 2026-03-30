@@ -1,3 +1,75 @@
-/* You can add global styles to this file, and also import other style files */
-
 @import 'tailwindcss';
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Outfit:wght@300;400;500&display=swap');
+
+/* Class-based dark mode — ThemeService toggles .dark on <html> */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ─── Design tokens ─────────────────────────────────────── */
+:root {
+  /* Backgrounds */
+  --bg:          #f5f0ea;
+  --bg-card:     #ffffff;
+
+  /* Borders */
+  --border:      #e2d9ce;
+  --border-focus: #c8922a;
+
+  /* Text */
+  --text:        #1c1610;
+  --text-muted:  #9a8878;
+
+  /* Accent (shared across themes) */
+  --accent:      #c8922a;
+  --accent-hover: #e0a733;
+
+  /* Error */
+  --error:       #c0392b;
+  --error-bg:    rgba(192, 57, 43, 0.08);
+
+  /* Background effects */
+  --dots-color:  #d4c8bc;
+  --orb-1:       rgba(200, 146, 42, 0.12);
+  --orb-2:       rgba(100, 120, 200, 0.1);
+}
+
+.dark {
+  /* Backgrounds */
+  --bg:          #06090e;
+  --bg-card:     #0b1018;
+
+  /* Borders */
+  --border:      #192130;
+  --border-focus: #c8922a;
+
+  /* Text */
+  --text:        #c8d6e0;
+  --text-muted:  #3e5162;
+
+  /* Accent (unchanged) */
+  --accent:      #c8922a;
+  --accent-hover: #e0a733;
+
+  /* Error (unchanged) */
+  --error:       #c0392b;
+  --error-bg:    rgba(192, 57, 43, 0.08);
+
+  /* Background effects */
+  --dots-color:  #1a2a3a;
+  --orb-1:       rgba(30, 80, 140, 0.4);
+  --orb-2:       rgba(100, 50, 10, 0.35);
+}
+
+/* ─── Base ──────────────────────────────────────────────── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--bg);
+  color: var(--text);
+  transition: background-color 0.25s ease, color 0.25s ease;
+}

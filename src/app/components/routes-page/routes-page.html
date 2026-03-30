@@ -1,0 +1,172 @@
+<main class="main">
+
+  <!-- Toolbar -->
+  <div class="toolbar">
+    <div class="toolbar-left">
+      <span class="page-title">Routes</span>
+      <span class="route-counts">
+        <span class="count-active">{{ activeCount() }} active</span>
+        @if (inactiveCount() > 0) {
+          <span class="count-sep">·</span>
+          <span class="count-inactive">{{ inactiveCount() }} inactivated</span>
+        }
+      </span>
+    </div>
+    <div class="toolbar-right">
+      @if (inactiveCount() > 0) {
+        <button class="toggle-btn" [class.active]="showInactivated()" (click)="showInactivated.update(v => !v)">
+          {{ showInactivated() ? 'Hiding inactivated' : 'Show inactivated' }}
+        </button>
+      }
+      <button class="add-btn" (click)="openAdd()">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+          <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+        Add Route
+      </button>
+    </div>
+  </div>
+
+  <!-- Table -->
+  @if (loading()) {
+    <div class="loading-state">
+      <svg class="spin" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+      </svg>
+      <span>Loading…</span>
+    </div>
+  } @else if (visibleRoutes().length === 0) {
+    <div class="empty-state">
+      <p class="empty-title">No routes yet</p>
+      <p class="empty-sub">Add your first route to get started.</p>
+    </div>
+  } @else {
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Method</th>
+            <th>Pattern</th>
+            <th>Backend URL</th>
+            <th>Created</th>
+            @if (showInactivated()) { <th>Inactivated</th> }
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (route of visibleRoutes(); track route.id) {
+            <tr [ngClass]="{ inactivated: !!route.inactivated_at }">
+              <td>
+                <span class="method-badge" [ngClass]="'method--' + route.method.toLowerCase()">
+                  {{ route.method }}
+                </span>
+              </td>
+              <td class="cell-pattern">{{ route.pattern }}</td>
+              <td class="cell-url">{{ route.backend_url }}</td>
+              <td class="cell-date">{{ formatDate(route.created_at) }}</td>
+              @if (showInactivated()) {
+                <td class="cell-date">
+                  {{ route.inactivated_at ? formatDate(route.inactivated_at) : '—' }}
+                </td>
+              }
+              <td class="cell-actions">
+                @if (!route.inactivated_at) {
+                  <button class="action-btn" title="Edit" (click)="openEdit(route)">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                    </svg>
+                  </button>
+                  <button class="action-btn action-btn--danger" title="Inactivate" (click)="inactivate(route)">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round">
+                      <circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>
+                    </svg>
+                  </button>
+                } @else {
+                  <button class="action-btn action-btn--reactivate" title="Reactivate" (click)="reactivate(route)">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+                    </svg>
+                  </button>
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+
+</main>
+
+<!-- Add / Edit Modal -->
+@if (formOpen()) {
+  <div class="modal-backdrop" (click)="closeForm()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2 class="modal-title">{{ editingRoute() ? 'Edit Route' : 'Add Route' }}</h2>
+        <button class="modal-close" (click)="closeForm()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <!-- Method -->
+        <div class="form-field">
+          <label class="form-label">Method</label>
+          <div class="method-group">
+            @for (m of methods; track m) {
+              <button
+                type="button"
+                class="method-opt"
+                [ngClass]="['method--' + m.toLowerCase(), formMethod() === m ? 'selected' : '']"
+                (click)="formMethod.set(m)"
+              >{{ m }}</button>
+            }
+          </div>
+        </div>
+
+        <!-- Pattern -->
+        <div class="form-field">
+          <label class="form-label" for="pattern">Pattern</label>
+          <input
+            id="pattern"
+            class="form-input"
+            type="text"
+            placeholder="/api/v1/orgs/{'{'}orgId{'}'}/resource"
+            [value]="formPattern()"
+            (input)="formPattern.set($any($event.target).value)"
+          />
+        </div>
+
+        <!-- Backend URL -->
+        <div class="form-field">
+          <label class="form-label" for="backend-url">Backend URL</label>
+          <input
+            id="backend-url"
+            class="form-input"
+            type="url"
+            placeholder="https://backend.example.com"
+            [value]="formBackendUrl()"
+            (input)="formBackendUrl.set($any($event.target).value)"
+          />
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-cancel" (click)="closeForm()">Cancel</button>
+        <button class="btn-save" [class.saving]="formSaving()" [disabled]="formSaving()" (click)="saveForm()">
+          @if (formSaving()) {
+            <svg class="spin" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+            </svg>
+          } @else {
+            {{ editingRoute() ? 'Save changes' : 'Add route' }}
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+}

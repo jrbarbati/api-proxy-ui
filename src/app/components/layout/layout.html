@@ -1,0 +1,27 @@
+<div class="shell">
+  <header class="header">
+    <div class="header-brand">
+      <svg width="20" height="20" viewBox="0 0 38 38" fill="none">
+        <path d="M14 2L24 2L36 14L36 24L24 36L14 36L2 24L2 14Z" stroke="currentColor" stroke-width="1.25"/>
+        <circle cx="19" cy="19" r="2.5" fill="currentColor"/>
+        <line x1="19" y1="12" x2="19" y2="14" stroke="currentColor" stroke-width="1.25"/>
+        <line x1="19" y1="24" x2="19" y2="26" stroke="currentColor" stroke-width="1.25"/>
+        <line x1="12" y1="19" x2="14" y2="19" stroke="currentColor" stroke-width="1.25"/>
+        <line x1="24" y1="19" x2="26" y2="19" stroke="currentColor" stroke-width="1.25"/>
+      </svg>
+      <span class="brand-text">API PROXY</span>
+    </div>
+
+    <nav class="header-nav">
+      <a class="nav-link" routerLink="/dashboard" routerLinkActive="active">Requests</a>
+      <a class="nav-link" routerLink="/routes" routerLinkActive="active">Routes</a>
+    </nav>
+
+    <div class="header-actions">
+      <app-theme-toggle />
+      <button class="logout-btn" (click)="logout()">Sign out</button>
+    </div>
+  </header>
+
+  <router-outlet />
+</div>

@@ -1,59 +1,55 @@
-# ApiProxyUi
+# API Proxy UI
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.2.5.
+Admin console for the API Proxy — monitor requests, manage routes, orgs, service accounts, and rate limits.
 
-## Development server
+## Requirements
 
-To start a local development server, run:
+- Node.js 20+
+- npm 10+
+- API Proxy backend running locally or accessible remotely
 
-```bash
-ng serve
-```
-
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
-
-## Code scaffolding
-
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+## Setup
 
 ```bash
-ng generate component component-name
+npm install
+npm start        # dev server at http://localhost:4200
 ```
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+## Environment Configuration
+
+### Angular environments
+
+Three environment files live in `src/environments/`:
+
+| File | Used when |
+|---|---|
+| `environment.dev.ts` | `npm start` (development build) |
+| `environment.prod.ts` | `ng build` (production build) |
+| `environment.ts` | Base/default — swapped out at build time, do not import directly |
+
+Edit the appropriate file to change API URLs before building.
+
+### Dev server proxy
+
+During development, the Angular dev server proxies `/api/*` requests to the API Proxy backend via `proxy.conf.js`. The default target is `http://localhost:8080`.
+
+To point the dev server at a different backend, set the `API_PROXY_URL` environment variable:
 
 ```bash
-ng generate --help
+# Local (default)
+npm start
+
+# Staging
+API_PROXY_URL=https://staging.example.com npm start
 ```
 
-## Building
+The proxy only applies during `ng serve`. Production builds talk directly to the URL configured in `environment.prod.ts`.
 
-To build the project run:
+## Commands
 
 ```bash
-ng build
+npm start                                     # Dev server at http://localhost:4200
+ng build                                      # Production build → dist/
+ng build --watch --configuration development  # Watch mode
+ng test                                       # Run unit tests via Vitest
 ```
-
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
-
-```bash
-ng test
-```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.

@@ -1,0 +1,104 @@
+.range-selector {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+/* ─── Presets ────────────────────────────────────────────── */
+.presets {
+  display: flex;
+  gap: 2px;
+}
+
+.preset-btn {
+  padding: 5px 11px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-right-width: 0;
+  color: var(--text-muted);
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  transition: color 0.15s, background 0.15s, border-color 0.15s;
+}
+
+.preset-btn:first-child { border-radius: 0; }
+.preset-btn:last-child  { border-right-width: 1px; }
+
+.preset-btn:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+  z-index: 1;
+  position: relative;
+}
+
+.preset-btn.active {
+  background: rgba(200, 146, 42, 0.1);
+  border-color: var(--accent);
+  color: var(--accent);
+  z-index: 1;
+  position: relative;
+}
+
+/* ─── Range label ────────────────────────────────────────── */
+.range-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+/* ─── Custom picker ──────────────────────────────────────── */
+.custom-picker {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-basis: 100%;
+  animation: fade-up 0.15s ease both;
+}
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.dt-input {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  padding: 5px 10px;
+  outline: none;
+  transition: border-color 0.2s;
+  color-scheme: dark light;
+}
+
+.dt-input:focus {
+  border-color: var(--accent);
+}
+
+.dt-sep {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.apply-btn {
+  padding: 5px 14px;
+  background: var(--accent);
+  border: 1px solid var(--accent);
+  color: var(--bg);
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.apply-btn:hover {
+  opacity: 0.85;
+}

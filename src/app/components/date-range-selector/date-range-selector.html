@@ -1,0 +1,40 @@
+<div class="range-selector">
+  <!-- Preset buttons -->
+  <div class="presets">
+    @for (preset of presets; track preset.hours) {
+      <button
+        class="preset-btn"
+        [ngClass]="{ active: activePreset()?.hours === preset.hours }"
+        (click)="selectPreset(preset)"
+      >{{ preset.label }}</button>
+    }
+    <button
+      class="preset-btn"
+      [ngClass]="{ active: activePreset() === null }"
+      (click)="openCustom()"
+    >Custom</button>
+  </div>
+
+  <!-- Range label -->
+  <span class="range-label">{{ rangeLabel() }}</span>
+
+  <!-- Custom range picker -->
+  @if (showCustom()) {
+    <div class="custom-picker">
+      <input
+        class="dt-input"
+        type="datetime-local"
+        [value]="customFrom()"
+        (change)="customFrom.set($any($event.target).value)"
+      />
+      <span class="dt-sep">→</span>
+      <input
+        class="dt-input"
+        type="datetime-local"
+        [value]="customTo()"
+        (change)="customTo.set($any($event.target).value)"
+      />
+      <button class="apply-btn" (click)="applyCustom()">Apply</button>
+    </div>
+  }
+</div>
