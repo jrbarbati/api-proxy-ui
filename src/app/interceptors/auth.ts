@@ -13,7 +13,8 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
   return next(authed).pipe(
     catchError((err: unknown) => {
-      if (err instanceof HttpErrorResponse && err.status === 401) {
+      // Only force-logout on 401 if the warning modal isn't already handling it
+      if (err instanceof HttpErrorResponse && err.status === 401 && !auth.showWarning()) {
         auth.logout();
       }
       return throwError(() => err);

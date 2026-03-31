@@ -1,0 +1,70 @@
+<div class="backdrop" [class.urgent]="isUrgent()">
+
+  <div class="modal" [class.urgent]="isUrgent()">
+
+    <!-- Header -->
+    <div class="modal-header">
+      <div class="header-label">
+        <span class="warning-pip" [class.urgent]="isUrgent()"></span>
+        <span class="header-text">SESSION EXPIRING</span>
+      </div>
+    </div>
+
+    <!-- Arc + countdown -->
+    <div class="arc-wrap">
+      <svg class="arc-svg" viewBox="0 0 120 120" fill="none">
+        <!-- Track -->
+        <circle
+          class="arc-track"
+          cx="60" cy="60" r="54"
+          stroke-width="3"
+        />
+        <!-- Draining progress arc -->
+        <circle
+          class="arc-progress"
+          [class.urgent]="isUrgent()"
+          cx="60" cy="60" r="54"
+          stroke-width="3"
+          stroke-linecap="square"
+          [attr.stroke-dasharray]="circumference"
+          [attr.stroke-dashoffset]="arcOffset()"
+        />
+      </svg>
+
+      <div class="countdown-wrap">
+        <span class="countdown-time" [class.urgent]="isUrgent()">
+          {{ minutes() }}:{{ secondsStr() }}
+        </span>
+        <span class="countdown-label">remaining</span>
+      </div>
+    </div>
+
+    <!-- Message -->
+    <div class="modal-body">
+      <p class="message">Your session is about to expire.</p>
+      <p class="sub-message">Extend your session to continue, or you will be signed out automatically.</p>
+    </div>
+
+    <!-- Actions -->
+    <div class="modal-footer">
+      <button class="btn-sign-out" (click)="signOut()">Sign Out</button>
+      <button
+        class="btn-extend"
+        [class.loading]="extending()"
+        [disabled]="extending()"
+        (click)="extend()"
+      >
+        @if (extending()) {
+          <svg class="spin" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+          </svg>
+          Extending…
+        } @else {
+          Extend Session
+        }
+      </button>
+    </div>
+
+  </div>
+
+</div>

@@ -1,2 +1,5 @@
 <router-outlet />
 <app-toast-container />
+@if (auth.showWarning()) {
+  <app-session-warning />
+}

@@ -1,0 +1,226 @@
+/* ─── Backdrop ───────────────────────────────────────────── */
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(2px);
+  animation: backdrop-in 0.2s ease;
+}
+
+.backdrop.urgent {
+  background: rgba(0, 0, 0, 0.72);
+}
+
+@keyframes backdrop-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ─── Modal ──────────────────────────────────────────────── */
+.modal {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-top: 3px solid var(--accent);
+  width: 360px;
+  display: flex;
+  flex-direction: column;
+  animation: modal-in 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+  transition: border-top-color 0.4s ease;
+}
+
+.modal.urgent {
+  border-top-color: var(--error);
+}
+
+@keyframes modal-in {
+  from { opacity: 0; transform: translateY(-16px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* ─── Header ─────────────────────────────────────────────── */
+.modal-header {
+  padding: 18px 24px 14px;
+  border-bottom: 1px solid var(--border);
+}
+
+.header-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.header-text {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+/* Pulsing warning pip */
+.warning-pip {
+  width: 6px;
+  height: 6px;
+  background: var(--accent);
+  flex-shrink: 0;
+  animation: pip-pulse 1.4s ease-in-out infinite;
+  transition: background 0.4s ease;
+}
+
+.warning-pip.urgent {
+  background: var(--error);
+  animation: pip-pulse-fast 0.7s ease-in-out infinite;
+}
+
+@keyframes pip-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.4; transform: scale(0.7); }
+}
+
+@keyframes pip-pulse-fast {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.3; }
+}
+
+/* ─── Arc + Countdown ────────────────────────────────────── */
+.arc-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 28px 0 20px;
+}
+
+.arc-svg {
+  width: 148px;
+  height: 148px;
+  transform: rotate(-90deg);
+}
+
+.arc-track {
+  stroke: var(--border);
+}
+
+.arc-progress {
+  stroke: var(--accent);
+  transition: stroke 0.4s ease, stroke-dashoffset 0.95s linear;
+}
+
+.arc-progress.urgent {
+  stroke: var(--error);
+}
+
+/* Countdown centered inside arc */
+.countdown-wrap {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.countdown-time {
+  font-family: 'DM Mono', monospace;
+  font-size: 38px;
+  font-weight: 300;
+  letter-spacing: -0.02em;
+  color: var(--text);
+  line-height: 1;
+  transition: color 0.4s ease;
+  /* tabular nums so digits don't shift layout */
+  font-variant-numeric: tabular-nums;
+}
+
+.countdown-time.urgent {
+  color: var(--error);
+}
+
+.countdown-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  opacity: 0.6;
+}
+
+/* ─── Body ───────────────────────────────────────────────── */
+.modal-body {
+  padding: 0 24px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  text-align: center;
+}
+
+.message {
+  font-family: 'Outfit', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text);
+  margin: 0;
+}
+
+.sub-message {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* ─── Footer ─────────────────────────────────────────────── */
+.modal-footer {
+  display: flex;
+  gap: 0;
+  border-top: 1px solid var(--border);
+}
+
+.btn-sign-out,
+.btn-extend {
+  flex: 1;
+  padding: 14px;
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  border: none;
+  transition: all 0.15s;
+}
+
+.btn-sign-out {
+  background: transparent;
+  color: var(--text-muted);
+  border-right: 1px solid var(--border);
+}
+
+.btn-sign-out:hover {
+  color: var(--error);
+  background: rgba(192, 57, 43, 0.06);
+}
+
+.btn-extend {
+  background: var(--accent);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+}
+
+.btn-extend:hover:not(:disabled) {
+  opacity: 0.88;
+}
+
+.btn-extend:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* ─── Shared ─────────────────────────────────────────────── */
+@keyframes spin { to { transform: rotate(360deg); } }
+.spin { animation: spin 0.9s linear infinite; }
