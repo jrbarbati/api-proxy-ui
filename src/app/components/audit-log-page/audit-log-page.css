@@ -1,0 +1,201 @@
+.main {
+  flex: 1;
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  max-width: 1400px;
+  width: 100%;
+  margin: 0 auto;
+  font-family: 'Outfit', sans-serif;
+}
+
+/* ─── Toolbar ─────────────────────────────────────────────── */
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.toolbar-left {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.page-title {
+  font-family: 'DM Mono', monospace;
+  font-size: 13px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--text);
+}
+
+.route-counts {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+}
+
+.count-active { color: #3a8c62; }
+
+/* ─── Filter selects ──────────────────────────────────────── */
+.filter-select {
+  padding: 5px 10px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  outline: none;
+  transition: color 0.2s, border-color 0.2s;
+  width: auto;
+}
+
+.filter-select:hover,
+.filter-select:focus {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+/* ─── States ──────────────────────────────────────────────── */
+.loading-state,
+.empty-state {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: var(--text-muted);
+  font-size: 13px;
+  padding: 60px;
+}
+
+.empty-title {
+  font-family: 'DM Mono', monospace;
+  font-size: 13px;
+  color: var(--text);
+  margin: 0;
+}
+
+.empty-sub {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+/* ─── Table ───────────────────────────────────────────────── */
+.table-wrap {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  overflow: hidden;
+  transition: background-color 0.25s ease, border-color 0.25s ease;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+thead tr {
+  border-bottom: 1px solid var(--border);
+}
+
+th {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  text-align: left;
+  padding: 10px 16px;
+  font-weight: 400;
+}
+
+td {
+  padding: 12px 16px;
+  color: var(--text);
+  border-bottom: 1px solid var(--border);
+  transition: color 0.25s ease;
+}
+
+tbody tr:last-child td {
+  border-bottom: none;
+}
+
+tbody tr:hover td {
+  background: rgba(200, 146, 42, 0.03);
+}
+
+.cell-actor {
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+}
+
+.cell-entity-type {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.cell-entity-id {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.cell-date {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.cell-empty {
+  color: var(--text-muted);
+  opacity: 0.5;
+}
+
+/* ─── Action badge ────────────────────────────────────────── */
+.action-badge {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  padding: 3px 7px;
+  font-weight: 500;
+}
+
+.action--created     { color: #3a8c62; background: rgba(58, 140, 98, 0.12); }
+.action--updated     { color: #c8922a; background: rgba(200, 146, 42, 0.12); }
+.action--inactivated { color: #9e3a3a; background: rgba(158, 58, 58, 0.12); }
+.action--reactivated { color: #3a6e9e; background: rgba(58, 110, 158, 0.12); }
+
+/* Fallback for any other action values */
+.action-badge:not(.action--created):not(.action--updated):not(.action--inactivated):not(.action--reactivated) {
+  color: var(--text-muted);
+  background: rgba(128, 128, 128, 0.1);
+}
+
+/* ─── Changes note ────────────────────────────────────────── */
+.changes-note {
+  font-size: 10px;
+  color: var(--text-muted);
+  font-family: 'DM Mono', monospace;
+}
+
+/* ─── Shared ──────────────────────────────────────────────── */
+@keyframes spin { to { transform: rotate(360deg); } }
+.spin { animation: spin 0.9s linear infinite; }

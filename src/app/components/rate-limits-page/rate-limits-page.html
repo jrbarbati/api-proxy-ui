@@ -1,0 +1,302 @@
+<main class="main">
+
+  <!-- Toolbar -->
+  <div class="toolbar">
+    <div class="toolbar-left">
+      <span class="page-title">Rate Limits</span>
+      <span class="route-counts">
+        <span class="count-active">{{ activeCount() }} active</span>
+        @if (inactiveCount() > 0) {
+          <span class="count-sep">·</span>
+          <span class="count-inactive">{{ inactiveCount() }} inactivated</span>
+        }
+      </span>
+    </div>
+    <div class="toolbar-right">
+      @if (inactiveCount() > 0) {
+        <button class="toggle-btn" [class.active]="showInactivated()" (click)="showInactivated.update(v => !v)">
+          {{ showInactivated() ? 'Hiding inactivated' : 'Show inactivated' }}
+        </button>
+      }
+      <button class="add-btn" (click)="openAdd()">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+          <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+        Add Rate Limit
+      </button>
+    </div>
+  </div>
+
+  <!-- Content -->
+  @if (loading()) {
+    <div class="loading-state">
+      <svg class="spin" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+      </svg>
+      <span>Loading…</span>
+    </div>
+  } @else if (orgGroups().length === 0) {
+    <div class="empty-state">
+      <p class="empty-title">No rate limits configured</p>
+      <p class="empty-sub">Add your first rate limit to get started.</p>
+    </div>
+  } @else {
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Scope</th>
+            <th>Organization / Account</th>
+            <th>Limit</th>
+            <th>Created</th>
+            @if (showInactivated()) { <th>Inactivated</th> }
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (group of orgGroups(); track group.org.id; let fi = $first) {
+
+            <!-- Org-level row -->
+            <tr [ngClass]="{
+              'inactivated': !!group.orgLimit?.inactivated_at,
+              'no-limit-row': !group.orgLimit,
+              'group-start': !fi
+            }">
+              <td>
+                @if (group.orgLimit) {
+                  <span class="tier-badge tier--org">ORG</span>
+                } @else {
+                  <span class="tier-badge tier--org tier--ghost">ORG</span>
+                }
+              </td>
+              <td class="cell-entity">{{ group.org.name }}</td>
+              <td class="cell-limit">
+                @if (group.orgLimit) {
+                  <span class="limit-value">{{ group.orgLimit.limit_per_minute }}</span><span class="limit-unit"> /min</span>
+                } @else {
+                  <span class="no-limit-text">no limit set</span>
+                }
+              </td>
+              <td class="cell-date">
+                {{ group.orgLimit ? formatDate(group.orgLimit.created_at) : '—' }}
+              </td>
+              @if (showInactivated()) {
+                <td class="cell-date">
+                  {{ group.orgLimit?.inactivated_at ? formatDate(group.orgLimit!.inactivated_at!) : '—' }}
+                </td>
+              }
+              <td class="cell-actions">
+                @if (group.orgLimit) {
+                  @if (!group.orgLimit.inactivated_at) {
+                    <button class="action-btn" title="Edit" (click)="openEdit(group.orgLimit)">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                      </svg>
+                    </button>
+                    <button class="action-btn action-btn--danger" title="Inactivate" (click)="inactivate(group.orgLimit)">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round">
+                        <circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>
+                      </svg>
+                    </button>
+                  } @else {
+                    <button class="action-btn action-btn--reactivate" title="Reactivate" (click)="reactivate(group.orgLimit)">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+                      </svg>
+                    </button>
+                  }
+                } @else {
+                  <button class="action-btn action-btn--add" title="Add org-level limit" (click)="openAdd(group.org)">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                      <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                    </svg>
+                  </button>
+                }
+              </td>
+            </tr>
+
+            <!-- SA-level rows -->
+            @for (entry of group.saEntries; track entry.limit.id) {
+              <tr [ngClass]="{ 'inactivated': !!entry.limit.inactivated_at, 'sa-row': true }">
+                <td class="cell-scope-sa">
+                  <span class="tier-badge tier--sa">SA</span>
+                </td>
+                <td class="cell-entity cell-entity--sa">{{ entry.sa.identifier }}</td>
+                <td class="cell-limit">
+                  <span class="limit-value">{{ entry.limit.limit_per_minute }}</span><span class="limit-unit"> /min</span>
+                </td>
+                <td class="cell-date">{{ formatDate(entry.limit.created_at) }}</td>
+                @if (showInactivated()) {
+                  <td class="cell-date">
+                    {{ entry.limit.inactivated_at ? formatDate(entry.limit.inactivated_at) : '—' }}
+                  </td>
+                }
+                <td class="cell-actions">
+                  @if (!entry.limit.inactivated_at) {
+                    <button class="action-btn" title="Edit" (click)="openEdit(entry.limit)">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                      </svg>
+                    </button>
+                    <button class="action-btn action-btn--danger" title="Inactivate" (click)="inactivate(entry.limit)">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round">
+                        <circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>
+                      </svg>
+                    </button>
+                  } @else {
+                    <button class="action-btn action-btn--reactivate" title="Reactivate" (click)="reactivate(entry.limit)">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+                      </svg>
+                    </button>
+                  }
+                </td>
+              </tr>
+            }
+
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+
+</main>
+
+<!-- Add / Edit Modal -->
+@if (formOpen()) {
+  <div class="modal-backdrop" (click)="closeForm()">
+    <div class="modal" (click)="$event.stopPropagation()">
+
+      <div class="modal-header">
+        <h2 class="modal-title">{{ editingLimit() ? 'Edit Rate Limit' : 'Add Rate Limit' }}</h2>
+        <button class="modal-close" (click)="closeForm()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="modal-body">
+
+        @if (editingLimit()) {
+          <!-- Edit: show context read-only -->
+          @if (formEditContext(); as ctx) {
+            <div class="edit-context">
+              <span class="tier-badge" [ngClass]="ctx.scope === 'org' ? 'tier--org' : 'tier--sa'">
+                {{ ctx.scope === 'org' ? 'ORG' : 'SA' }}
+              </span>
+              <span class="edit-context-label">{{ ctx.label }}</span>
+              @if (ctx.scope === 'sa') {
+                <span class="edit-context-org">{{ ctx.orgLabel }}</span>
+              }
+            </div>
+          }
+        } @else {
+          <!-- Scope selector -->
+          <div class="form-field">
+            <label class="form-label">Scope</label>
+            <div class="scope-group">
+              <button
+                type="button"
+                class="scope-opt"
+                [class.selected]="formScope() === 'org'"
+                (click)="formScope.set('org'); formSaId.set(null)"
+              >
+                <span class="tier-badge tier--org">ORG</span>
+                Org-level
+              </button>
+              <button
+                type="button"
+                class="scope-opt"
+                [class.selected]="formScope() === 'sa'"
+                (click)="formScope.set('sa')"
+              >
+                <span class="tier-badge tier--sa">SA</span>
+                Service Account
+              </button>
+            </div>
+          </div>
+
+          <!-- Org select -->
+          <div class="form-field">
+            <label class="form-label" for="form-org">Organization</label>
+            <div class="select-wrap">
+              <select
+                id="form-org"
+                class="form-select"
+                [value]="formOrgId() ?? ''"
+                (change)="formOrgId.set(+$any($event.target).value || null); formSaId.set(null)"
+              >
+                <option value="">Select an organization…</option>
+                @for (org of activeOrgs(); track org.id) {
+                  <option [value]="org.id">{{ org.name }}</option>
+                }
+              </select>
+              <svg class="select-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <polyline points="6 9 12 15 18 9"/>
+              </svg>
+            </div>
+          </div>
+
+          <!-- SA select (conditional) -->
+          @if (formScope() === 'sa') {
+            <div class="form-field">
+              <label class="form-label" for="form-sa">Service Account</label>
+              <div class="select-wrap">
+                <select
+                  id="form-sa"
+                  class="form-select"
+                  [disabled]="!formOrgId()"
+                  [value]="formSaId() ?? ''"
+                  (change)="formSaId.set(+$any($event.target).value || null)"
+                >
+                  <option value="">{{ formOrgId() ? 'Select a service account…' : 'Select an org first…' }}</option>
+                  @for (sa of formSaOptions(); track sa.id) {
+                    <option [value]="sa.id">{{ sa.identifier }}</option>
+                  }
+                </select>
+                <svg class="select-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                  <polyline points="6 9 12 15 18 9"/>
+                </svg>
+              </div>
+            </div>
+          }
+        }
+
+        <!-- Limit per minute -->
+        <div class="form-field">
+          <label class="form-label" for="form-limit">Requests per minute</label>
+          <div class="limit-input-wrap">
+            <input
+              id="form-limit"
+              class="form-input"
+              type="number"
+              min="1"
+              placeholder="e.g. 100"
+              [value]="formLimitPerMinute()"
+              (input)="formLimitPerMinute.set($any($event.target).value)"
+            />
+            <span class="limit-suffix">/min</span>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-cancel" (click)="closeForm()">Cancel</button>
+        <button class="btn-save" [disabled]="formSaving()" (click)="saveForm()">
+          @if (formSaving()) {
+            <svg class="spin" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+            </svg>
+          } @else {
+            {{ editingLimit() ? 'Save changes' : 'Add limit' }}
+          }
+        </button>
+      </div>
+
+    </div>
+  </div>
+}

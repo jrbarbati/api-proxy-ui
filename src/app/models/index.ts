@@ -7,3 +7,4 @@ export * from './service-account';
 export * from './rate-limit';
 export * from './request';
 export * from './route';
+export * from './audit-log';

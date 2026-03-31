@@ -1,24 +1,33 @@
 import { Component, inject, signal, computed, OnInit } from '@angular/core';
-import { NgClass } from '@angular/common';
+import { NgClass, DecimalPipe } from '@angular/common';
 import { RoutesService, RoutePayload } from '../../services/routes';
+import { RequestsService } from '../../services/requests';
 import { ToastService } from '../../services/toast';
-import { Route } from '../../models';
+import { Route, Request, rangeFromHours } from '../../models';
 import { parseUTC } from '../../utils/date';
 
 const METHODS = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'];
 
+interface RouteStat {
+  count: number;
+  errorRate: number;
+  avgLatency: number;
+}
+
 @Component({
   selector: 'app-routes-page',
-  imports: [NgClass],
+  imports: [NgClass, DecimalPipe],
   templateUrl: './routes-page.html',
   styleUrl: './routes-page.css',
 })
 export class RoutesPage implements OnInit {
   private readonly routesSvc = inject(RoutesService);
+  private readonly requestsSvc = inject(RequestsService);
   private readonly toast = inject(ToastService);
 
   readonly methods = METHODS;
   readonly routes = signal<Route[]>([]);
+  readonly requests = signal<Request[]>([]);
   readonly loading = signal(true);
   readonly showInactivated = signal(false);
 
@@ -30,6 +39,27 @@ export class RoutesPage implements OnInit {
   readonly activeCount = computed(() => this.routes().filter(r => !r.inactivated_at).length);
   readonly inactiveCount = computed(() => this.routes().filter(r => !!r.inactivated_at).length);
 
+  readonly routeStatsMap = computed((): Map<number, RouteStat> => {
+    const acc = new Map<number, { count: number; errors: number; totalLatency: number }>();
+    for (const req of this.requests()) {
+      if (req.route_id === null) continue;
+      const s = acc.get(req.route_id) ?? { count: 0, errors: 0, totalLatency: 0 };
+      s.count++;
+      if (req.status_code >= 400) s.errors++;
+      s.totalLatency += req.latency;
+      acc.set(req.route_id, s);
+    }
+    const result = new Map<number, RouteStat>();
+    for (const [id, s] of acc) {
+      result.set(id, {
+        count: s.count,
+        errorRate: (s.errors / s.count) * 100,
+        avgLatency: Math.round(s.totalLatency / s.count),
+      });
+    }
+    return result;
+  });
+
   // Form state
   readonly formOpen = signal(false);
   readonly editingRoute = signal<Route | null>(null);
@@ -39,17 +69,23 @@ export class RoutesPage implements OnInit {
   readonly formSaving = signal(false);
 
   async ngOnInit(): Promise<void> {
-    await this.loadRoutes();
-  }
-
-  private async loadRoutes(): Promise<void> {
+    const range = rangeFromHours(24);
     try {
-      this.routes.set(await this.routesSvc.getRoutes());
+      const [routes, requests] = await Promise.all([
+        this.routesSvc.getRoutes(),
+        this.requestsSvc.getRequests(range.from, range.to),
+      ]);
+      this.routes.set(routes);
+      this.requests.set(requests);
     } catch {
       this.toast.error('Failed to load routes', 'Could not reach the API proxy.');
     } finally {
       this.loading.set(false);
     }
+  }
+
+  statFor(routeId: number): RouteStat | null {
+    return this.routeStatsMap().get(routeId) ?? null;
   }
 
   openAdd(): void {

@@ -91,33 +91,101 @@
       <div class="stat-card">
         <p class="stat-label">Total Requests</p>
         <p class="stat-value">{{ totalRequests() | number }}</p>
+        @if (deltaTotal() !== null) {
+          <p class="stat-delta"
+             [class.delta--up]="deltaTotal()! > 0"
+             [class.delta--neutral]="deltaTotal()! === 0">
+            {{ formatDelta(deltaTotal()) }}
+            <span class="delta-vs">vs prev</span>
+          </p>
+        }
       </div>
       <div class="stat-card">
         <p class="stat-label">Avg Latency</p>
         <p class="stat-value">{{ avgLatency() }}<span class="stat-unit">ms</span></p>
+        @if (deltaAvgLatency() !== null) {
+          <p class="stat-delta"
+             [class.delta--good]="deltaAvgLatency()! < 0"
+             [class.delta--bad]="deltaAvgLatency()! > 0">
+            {{ formatDelta(deltaAvgLatency()) }}
+            <span class="delta-vs">vs prev</span>
+          </p>
+        }
       </div>
       <div class="stat-card">
         <p class="stat-label">p95 Latency</p>
         <p class="stat-value">{{ p95Latency() }}<span class="stat-unit">ms</span></p>
+        @if (deltaP95() !== null) {
+          <p class="stat-delta"
+             [class.delta--good]="deltaP95()! < 0"
+             [class.delta--bad]="deltaP95()! > 0">
+            {{ formatDelta(deltaP95()) }}
+            <span class="delta-vs">vs prev</span>
+          </p>
+        }
       </div>
       <div class="stat-card">
         <p class="stat-label">Error Rate</p>
         <p class="stat-value">{{ errorRate() }}<span class="stat-unit">%</span></p>
+        @if (deltaErrorRate() !== null) {
+          <p class="stat-delta"
+             [class.delta--good]="deltaErrorRate()! < 0"
+             [class.delta--bad]="deltaErrorRate()! > 0">
+            {{ formatDelta(deltaErrorRate()) }}
+            <span class="delta-vs">vs prev</span>
+          </p>
+        }
       </div>
     </div>
 
-    <!-- Charts -->
+    <!-- Charts row 1: Latency + Status -->
     <div class="charts-row">
       <div class="chart-card chart-card--wide">
-        <p class="chart-title">Latency over time</p>
+        <div class="chart-header">
+          <p class="chart-title">Latency over time</p>
+          <div class="chart-mode-toggle">
+            <button class="mode-btn" [class.active]="latencyMode() === 'family'" (click)="latencyMode.set('family')">By Status</button>
+            <button class="mode-btn" [class.active]="latencyMode() === 'percentile'" (click)="latencyMode.set('percentile')">Percentiles</button>
+          </div>
+        </div>
         <div class="chart-body">
-          <app-latency-chart [data]="filteredRequests()" />
+          <app-latency-chart [data]="filteredRequests()" [mode]="latencyMode()" />
         </div>
       </div>
       <div class="chart-card">
         <p class="chart-title">Status codes by hour</p>
         <div class="chart-body">
           <app-status-chart [data]="filteredRequests()" />
+        </div>
+      </div>
+    </div>
+
+    <!-- Charts row 2: Top Routes + Rate Pressure -->
+    <div class="charts-row charts-row--secondary">
+      <div class="chart-card">
+        <p class="chart-title">Top routes</p>
+        <div class="top-routes">
+          @for (entry of topRoutes(); track entry.route.id) {
+            <div class="top-route-item">
+              <div class="top-route-meta">
+                <span class="top-route-pattern">{{ entry.route.pattern }}</span>
+                <span class="top-route-count">{{ entry.count | number }}</span>
+              </div>
+              <div class="top-route-bar-wrap">
+                <div class="top-route-bar" [style.width.%]="entry.pct"></div>
+                <span class="top-route-pct">{{ entry.pct | number:'1.0-0' }}%</span>
+              </div>
+            </div>
+          }
+          @if (!topRoutes().length) {
+            <p class="empty-hint">No route data available</p>
+          }
+        </div>
+      </div>
+      <div class="chart-card chart-card--wide">
+        <p class="chart-title">Rate pressure</p>
+        <div class="chart-body">
+          <app-rate-pressure-chart [data]="filteredRequests()" />
         </div>
       </div>
     </div>

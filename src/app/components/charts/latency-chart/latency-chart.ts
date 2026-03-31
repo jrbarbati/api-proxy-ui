@@ -6,6 +6,7 @@ import {
   input,
   effect,
   afterNextRender,
+  untracked,
 } from '@angular/core';
 import { Chart, type ChartConfiguration } from 'chart.js/auto';
 import { Request } from '../../../models';
@@ -19,6 +20,13 @@ const FAMILIES = [
   { label: '5xx', color: '#9e3a3a', test: (s: number) => s >= 500 },
 ] as const;
 
+const PERCENTILES = [
+  { label: 'p50', color: '#3a8c62', p: 0.50 },
+  { label: 'p75', color: '#3a6e9e', p: 0.75 },
+  { label: 'p95', color: '#c8922a', p: 0.95 },
+  { label: 'p99', color: '#9e3a3a', p: 0.99 },
+] as const;
+
 @Component({
   selector: 'app-latency-chart',
   template: `<canvas #canvas></canvas>`,
@@ -28,6 +36,7 @@ export class LatencyChart {
   @ViewChild('canvas') canvasRef!: ElementRef<HTMLCanvasElement>;
 
   data = input<Request[]>([]);
+  mode = input<'family' | 'percentile'>('family');
 
   private chart: Chart | null = null;
   private readonly theme = inject(ThemeService);
@@ -42,47 +51,95 @@ export class LatencyChart {
       this.applyTheme(isDark);
     });
 
+    // Re-render whenever data OR mode changes
     effect(() => {
       const requests = this.data();
-      if (this.chart) this.updateData(requests);
+      const m = this.mode();
+      if (!this.chart) return;
+      const isDark = untracked(() => this.theme.isDark());
+      const items = m === 'family' ? FAMILIES : PERCENTILES;
+      this.chart.data.datasets = items.map(item => this.buildDataset(item.label, item.color, isDark));
+      this.updateData(requests, m);
     });
   }
 
   private initChart(): void {
     const ctx = this.canvasRef.nativeElement.getContext('2d')!;
     const isDark = this.theme.isDark();
+    const m = this.mode();
+    const items = m === 'family' ? FAMILIES : PERCENTILES;
 
     const config: ChartConfiguration = {
       type: 'line',
       data: {
         labels: [],
-        datasets: FAMILIES.map(f => this.buildDataset(f.label, f.color, isDark)),
+        datasets: items.map(item => this.buildDataset(item.label, item.color, isDark)),
       },
       options: this.buildOptions(isDark),
     };
 
     this.chart = new Chart(ctx, config);
-    this.updateData(this.data());
+    this.updateData(this.data(), m);
   }
 
-  private updateData(requests: Request[]): void {
+  private updateData(requests: Request[], mode: 'family' | 'percentile'): void {
     if (!this.chart) return;
+    if (mode === 'family') {
+      this.updateFamilyData(requests);
+    } else {
+      this.updatePercentileData(requests);
+    }
+    this.chart.update('none');
+  }
 
-    // Build a sorted list of all unique timestamps as the shared x-axis
+  private updateFamilyData(requests: Request[]): void {
     const sorted = [...requests].sort(
       (a, b) => parseUTC(a.created_at).getTime() - parseUTC(b.created_at).getTime(),
     );
-    const labels = sorted.map(r => this.formatTime(r.created_at));
-    this.chart.data.labels = labels;
-
-    // For each family, map latency at each position (null if that request isn't in this family)
+    this.chart!.data.labels = sorted.map(r => this.formatTime(r.created_at));
     FAMILIES.forEach((family, i) => {
       this.chart!.data.datasets[i].data = sorted.map(r =>
         family.test(r.status_code) ? r.latency : null,
       ) as any;
     });
+  }
 
-    this.chart.update('none');
+  private updatePercentileData(requests: Request[]): void {
+    if (!requests.length) {
+      PERCENTILES.forEach((_, i) => { this.chart!.data.datasets[i].data = []; });
+      this.chart!.data.labels = [];
+      return;
+    }
+
+    // Determine bucket size from data span
+    const times = requests.map(r => parseUTC(r.created_at).getTime());
+    const spanMs = Math.max(...times) - Math.min(...times);
+    const bucketMs =
+      spanMs < 2 * 3_600_000  ? 5 * 60_000   // < 2h  → 5-min buckets
+      : spanMs < 12 * 3_600_000 ? 15 * 60_000  // < 12h → 15-min buckets
+      : spanMs < 48 * 3_600_000 ? 30 * 60_000  // < 48h → 30-min buckets
+      : 3_600_000;                               // else  → 1-hour buckets
+
+    // Group into buckets
+    const bucketMap = new Map<number, number[]>();
+    for (const req of requests) {
+      const t = parseUTC(req.created_at).getTime();
+      const key = Math.floor(t / bucketMs) * bucketMs;
+      if (!bucketMap.has(key)) bucketMap.set(key, []);
+      bucketMap.get(key)!.push(req.latency);
+    }
+
+    const buckets = [...bucketMap.entries()].sort(([a], [b]) => a - b);
+    this.chart!.data.labels = buckets.map(([key]) =>
+      new Date(key).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+    );
+
+    PERCENTILES.forEach((pc, i) => {
+      this.chart!.data.datasets[i].data = buckets.map(([, latencies]) => {
+        const sorted = [...latencies].sort((a, b) => a - b);
+        return sorted[Math.max(0, Math.floor((sorted.length - 1) * pc.p))];
+      }) as any;
+    });
   }
 
   private applyTheme(isDark: boolean): void {
@@ -99,19 +156,20 @@ export class LatencyChart {
     opts.plugins.tooltip.borderColor = isDark ? '#192130' : '#e2d9ce';
     opts.plugins.tooltip.bodyColor = isDark ? '#c8d6e0' : '#1c1610';
 
-    FAMILIES.forEach((family, i) => {
+    const m = this.mode();
+    const items = m === 'family' ? FAMILIES : PERCENTILES;
+    items.forEach((item, i) => {
       const existing = this.chart!.data.datasets[i];
       this.chart!.data.datasets[i] = {
         ...existing,
-        ...this.buildDataset(family.label, family.color, isDark),
+        ...this.buildDataset(item.label, item.color, isDark),
         data: existing.data,
       };
     });
-
     this.chart.update('none');
   }
 
-  private buildDataset(label: string, color: string, isDark: boolean): any {
+  private buildDataset(label: string, color: string, _isDark: boolean): any {
     return {
       label,
       data: [],
@@ -134,7 +192,7 @@ export class LatencyChart {
     return {
       responsive: true,
       maintainAspectRatio: false,
-      animation: { duration: 400 },
+      animation: { duration: 300 },
       interaction: { mode: 'index', intersect: false },
       plugins: {
         legend: {

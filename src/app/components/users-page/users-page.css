@@ -160,19 +160,9 @@ tbody tr.inactivated td {
   opacity: 0.4;
 }
 
-.cell-pattern {
+.cell-email {
   font-family: 'DM Mono', monospace;
   font-size: 12px;
-}
-
-.cell-url {
-  font-family: 'DM Mono', monospace;
-  font-size: 11px;
-  color: var(--text-muted);
-  max-width: 280px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .cell-date {
@@ -186,50 +176,6 @@ tbody tr.inactivated td {
   text-align: right;
   white-space: nowrap;
 }
-
-/* ─── Route stats column ──────────────────────────────────── */
-.th-stats {
-  white-space: nowrap;
-}
-
-.cell-stats {
-  white-space: nowrap;
-  font-family: 'DM Mono', monospace;
-  font-size: 11px;
-  color: var(--text-muted);
-}
-
-.stat-pill {
-  display: inline;
-}
-
-.stat-sep {
-  margin: 0 4px;
-  opacity: 0.4;
-}
-
-.stat-none {
-  opacity: 0.35;
-}
-
-.stat--warn  { color: #c8922a; }
-.stat--error { color: #9e3a3a; }
-.stat--slow  { color: #9e3a3a; }
-
-/* ─── Method badge ────────────────────────────────────────── */
-.method-badge {
-  font-family: 'DM Mono', monospace;
-  font-size: 10px;
-  letter-spacing: 0.04em;
-  padding: 3px 7px;
-  font-weight: 500;
-}
-
-.method--get    { color: #3a8c62; background: rgba(58,140,98,0.12); }
-.method--post   { color: #3a6e9e; background: rgba(58,110,158,0.12); }
-.method--put    { color: #c8922a; background: rgba(200,146,42,0.12); }
-.method--patch  { color: #7a5ea0; background: rgba(122,94,160,0.12); }
-.method--delete { color: #9e3a3a; background: rgba(158,58,58,0.12); }
 
 /* ─── Row action buttons ──────────────────────────────────── */
 .action-btn {
@@ -342,41 +288,6 @@ tbody tr.inactivated td {
 
 .form-input:focus { border-color: var(--accent); }
 .form-input::placeholder { color: var(--text-muted); opacity: 0.6; }
-
-/* Method group */
-.method-group {
-  display: flex;
-  gap: 0;
-}
-
-.method-opt {
-  flex: 1;
-  padding: 7px 4px;
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-right-width: 0;
-  font-family: 'DM Mono', monospace;
-  font-size: 10px;
-  letter-spacing: 0.05em;
-  cursor: pointer;
-  color: var(--text-muted);
-  transition: all 0.15s;
-}
-
-.method-opt:last-child { border-right-width: 1px; }
-
-.method-opt.selected.method--get    { background: rgba(58,140,98,0.15);   color: #3a8c62; border-color: #3a8c62; }
-.method-opt.selected.method--post   { background: rgba(58,110,158,0.15);  color: #3a6e9e; border-color: #3a6e9e; }
-.method-opt.selected.method--put    { background: rgba(200,146,42,0.15);  color: #c8922a; border-color: #c8922a; }
-.method-opt.selected.method--patch  { background: rgba(122,94,160,0.15);  color: #7a5ea0; border-color: #7a5ea0; }
-.method-opt.selected.method--delete { background: rgba(158,58,58,0.15);   color: #9e3a3a; border-color: #9e3a3a; }
-
-.method-opt:hover:not(.selected) {
-  color: var(--text);
-  border-color: var(--text-muted);
-  z-index: 1;
-  position: relative;
-}
 
 /* Modal footer */
 .modal-footer {

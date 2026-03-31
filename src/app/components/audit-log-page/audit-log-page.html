@@ -1,0 +1,87 @@
+<main class="main">
+
+  <!-- Toolbar -->
+  <div class="toolbar">
+    <div class="toolbar-left">
+      <span class="page-title">Audit Log</span>
+      @if (!loading()) {
+        <span class="route-counts">
+          <span class="count-active">{{ filteredEntries().length }} entries</span>
+        </span>
+      }
+    </div>
+    <div class="toolbar-right">
+      <select
+        class="filter-select"
+        [value]="filterEntityType()"
+        (change)="filterEntityType.set($any($event.target).value)"
+      >
+        @for (type of entityTypes(); track type) {
+          <option [value]="type">{{ type === 'all' ? 'All entity types' : type }}</option>
+        }
+      </select>
+      <select
+        class="filter-select"
+        [value]="filterAction()"
+        (change)="filterAction.set($any($event.target).value)"
+      >
+        @for (action of actions(); track action) {
+          <option [value]="action">{{ action === 'all' ? 'All actions' : action }}</option>
+        }
+      </select>
+    </div>
+  </div>
+
+  <!-- Table -->
+  @if (loading()) {
+    <div class="loading-state">
+      <svg class="spin" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+      </svg>
+      <span>Loading…</span>
+    </div>
+  } @else if (filteredEntries().length === 0) {
+    <div class="empty-state">
+      <p class="empty-title">No audit entries</p>
+      <p class="empty-sub">Activity will appear here once actions are performed.</p>
+    </div>
+  } @else {
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Actor</th>
+            <th>Action</th>
+            <th>Entity Type</th>
+            <th>Entity ID</th>
+            <th>Changes</th>
+            <th>Timestamp</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (entry of filteredEntries(); track entry.id) {
+            <tr>
+              <td class="cell-actor">{{ entry.actor_email }}</td>
+              <td>
+                <span class="action-badge" [ngClass]="'action--' + entry.action">
+                  {{ entry.action }}
+                </span>
+              </td>
+              <td class="cell-entity-type">{{ entry.entity_type }}</td>
+              <td class="cell-entity-id">{{ entry.entity_id }}</td>
+              <td>
+                @if (entry.changes) {
+                  <span class="changes-note">{{ changesCount(entry) }} field{{ changesCount(entry) === 1 ? '' : 's' }} changed</span>
+                } @else {
+                  <span class="cell-empty">—</span>
+                }
+              </td>
+              <td class="cell-date">{{ formatDate(entry.created_at) }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+
+</main>

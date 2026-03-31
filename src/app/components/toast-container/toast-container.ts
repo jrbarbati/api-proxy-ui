@@ -1,10 +1,10 @@
-import { Component, inject, signal } from '@angular/core';
-import { NgClass, NgStyle } from '@angular/common';
-import { ToastService } from '../../services/toast';
+import {Component, inject, signal} from '@angular/core';
+import {NgClass} from '@angular/common';
+import {ToastService} from '../../services/toast';
 
 @Component({
   selector: 'app-toast-container',
-  imports: [NgClass, NgStyle],
+  imports: [NgClass],
   templateUrl: './toast-container.html',
   styleUrl: './toast-container.css',
 })

@@ -5,15 +5,22 @@ import { RoutesService } from '../../services/routes';
 import { ToastService } from '../../services/toast';
 import { LatencyChart } from '../charts/latency-chart/latency-chart';
 import { StatusChart } from '../charts/status-chart/status-chart';
+import { RatePressureChart } from '../charts/rate-pressure-chart/rate-pressure-chart';
 import { RouteFilter } from '../route-filter/route-filter';
 import { DateRangeSelector } from '../date-range-selector/date-range-selector';
 import { Request, Route, DateRange, rangeFromHours } from '../../models';
 
-const AUTO_REFRESH_MS = 120_000; // 2 minutes
+const AUTO_REFRESH_MS = 120_000;
+
+interface TopRoute {
+  route: Route;
+  count: number;
+  pct: number;
+}
 
 @Component({
   selector: 'app-dashboard',
-  imports: [LatencyChart, StatusChart, RouteFilter, DateRangeSelector, DecimalPipe],
+  imports: [LatencyChart, StatusChart, RatePressureChart, RouteFilter, DateRangeSelector, DecimalPipe],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.css',
 })
@@ -23,11 +30,13 @@ export class Dashboard implements OnInit, OnDestroy {
   private readonly toast = inject(ToastService);
 
   readonly requests = signal<Request[]>([]);
+  readonly comparisonRequests = signal<Request[]>([]);
   readonly routes = signal<Route[]>([]);
   readonly selectedRoutes = signal<Route[]>([]);
   readonly exclude429s = signal(true);
   readonly loading = signal(true);
   readonly refreshing = signal(false);
+  readonly latencyMode = signal<'family' | 'percentile'>('family');
 
   // Auto-refresh state
   readonly activePresetHours = signal<number | null>(12);
@@ -45,39 +54,95 @@ export class Dashboard implements OnInit, OnDestroy {
       const selectedIds = new Set(selected.map(r => r.id));
       reqs = reqs.filter(req => req.route_id !== null && selectedIds.has(req.route_id));
     }
-    if (this.exclude429s()) {
-      reqs = reqs.filter(r => r.status_code !== 429);
+    if (this.exclude429s()) reqs = reqs.filter(r => r.status_code !== 429);
+    return reqs;
+  });
+
+  readonly prevFilteredRequests = computed(() => {
+    let reqs = this.comparisonRequests();
+    const selected = this.selectedRoutes();
+    if (selected.length) {
+      const selectedIds = new Set(selected.map(r => r.id));
+      reqs = reqs.filter(req => req.route_id !== null && selectedIds.has(req.route_id));
     }
+    if (this.exclude429s()) reqs = reqs.filter(r => r.status_code !== 429);
     return reqs;
   });
 
   readonly totalRequests = computed(() => this.filteredRequests().length);
+
   readonly avgLatency = computed(() => {
     const reqs = this.filteredRequests();
     if (!reqs.length) return 0;
-    return Math.round(reqs.reduce((sum, r) => sum + r.latency, 0) / reqs.length);
+    return Math.round(reqs.reduce((s, r) => s + r.latency, 0) / reqs.length);
   });
+
   readonly p95Latency = computed(() => {
-    const latencies = [...this.filteredRequests()].map(r => r.latency).sort((a, b) => a - b);
-    if (!latencies.length) return 0;
-    return latencies[Math.floor(latencies.length * 0.95)];
+    const lats = [...this.filteredRequests()].map(r => r.latency).sort((a, b) => a - b);
+    if (!lats.length) return 0;
+    return lats[Math.floor(lats.length * 0.95)];
   });
+
   readonly errorRate = computed(() => {
     const reqs = this.filteredRequests();
     if (!reqs.length) return '0.0';
-    const errors = reqs.filter(r => r.status_code >= 400).length;
-    return ((errors / reqs.length) * 100).toFixed(1);
+    return ((reqs.filter(r => r.status_code >= 400).length / reqs.length) * 100).toFixed(1);
+  });
+
+  // Comparison computeds
+  private readonly prevAvgLatency = computed(() => {
+    const reqs = this.prevFilteredRequests();
+    if (!reqs.length) return 0;
+    return Math.round(reqs.reduce((s, r) => s + r.latency, 0) / reqs.length);
+  });
+
+  private readonly prevP95Latency = computed(() => {
+    const lats = [...this.prevFilteredRequests()].map(r => r.latency).sort((a, b) => a - b);
+    if (!lats.length) return 0;
+    return lats[Math.floor(lats.length * 0.95)];
+  });
+
+  private readonly prevErrorRate = computed(() => {
+    const reqs = this.prevFilteredRequests();
+    if (!reqs.length) return 0;
+    return (reqs.filter(r => r.status_code >= 400).length / reqs.length) * 100;
+  });
+
+  readonly deltaTotal = computed(() => this.delta(this.totalRequests(), this.prevFilteredRequests().length));
+  readonly deltaAvgLatency = computed(() => this.delta(this.avgLatency(), this.prevAvgLatency()));
+  readonly deltaP95 = computed(() => this.delta(this.p95Latency(), this.prevP95Latency()));
+  readonly deltaErrorRate = computed(() => this.delta(parseFloat(this.errorRate()), this.prevErrorRate()));
+
+  readonly topRoutes = computed((): TopRoute[] => {
+    const countMap = new Map<number, number>();
+    for (const req of this.filteredRequests()) {
+      if (req.route_id !== null) {
+        countMap.set(req.route_id, (countMap.get(req.route_id) ?? 0) + 1);
+      }
+    }
+    const total = this.filteredRequests().length || 1;
+    return [...countMap.entries()]
+      .map(([routeId, count]) => ({
+        route: this.routes().find(r => r.id === routeId)!,
+        count,
+        pct: (count / total) * 100,
+      }))
+      .filter(e => !!e.route)
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 8);
   });
 
   async ngOnInit(): Promise<void> {
     try {
       const initialRange = rangeFromHours(12);
       this.lastRange = initialRange;
-      const [requests, routes] = await Promise.all([
+      const [requests, comparison, routes] = await Promise.all([
         this.requestsSvc.getRequests(initialRange.from, initialRange.to),
+        this.requestsSvc.getRequests(this.prevRange(initialRange).from, this.prevRange(initialRange).to),
         this.routesSvc.getRoutes(),
       ]);
       this.requests.set(requests);
+      this.comparisonRequests.set(comparison);
       this.routes.set(routes);
       this.lastRefreshed.set(new Date());
     } catch {
@@ -118,10 +183,21 @@ export class Dashboard implements OnInit, OnDestroy {
     return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   }
 
+  formatDelta(d: number | null): string {
+    if (d === null) return '';
+    return `${d >= 0 ? '+' : ''}${d.toFixed(1)}%`;
+  }
+
   private async fetchRequests(range: DateRange): Promise<void> {
     this.refreshing.set(true);
     try {
-      this.requests.set(await this.requestsSvc.getRequests(range.from, range.to));
+      const prev = this.prevRange(range);
+      const [requests, comparison] = await Promise.all([
+        this.requestsSvc.getRequests(range.from, range.to),
+        this.requestsSvc.getRequests(prev.from, prev.to),
+      ]);
+      this.requests.set(requests);
+      this.comparisonRequests.set(comparison);
     } catch {
       this.toast.error('Failed to load requests', 'Could not reach the API proxy.');
     } finally {
@@ -159,5 +235,15 @@ export class Dashboard implements OnInit, OnDestroy {
   private flashRefreshed(): void {
     this.justRefreshed.set(true);
     setTimeout(() => this.justRefreshed.set(false), 700);
+  }
+
+  private prevRange(range: DateRange): DateRange {
+    const dur = range.to.getTime() - range.from.getTime();
+    return { from: new Date(range.from.getTime() - dur), to: new Date(range.from.getTime()) };
+  }
+
+  private delta(curr: number, prev: number): number | null {
+    if (!prev) return null;
+    return ((curr - prev) / prev) * 100;
   }
 }

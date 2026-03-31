@@ -224,11 +224,37 @@
   margin-left: 2px;
 }
 
+.stat-delta {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  margin: 6px 0 0;
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+  color: var(--text-muted);
+}
+
+.stat-delta.delta--good { color: #3a8c62; }
+.stat-delta.delta--bad  { color: #9e3a3a; }
+.stat-delta.delta--up   { color: var(--accent); }
+
+.delta-vs {
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  opacity: 0.6;
+  text-transform: uppercase;
+}
+
 /* ─── Charts ─────────────────────────────────────────────── */
 .charts-row {
   display: grid;
   grid-template-columns: 2fr 1fr;
   gap: 16px;
+}
+
+.charts-row--secondary {
+  grid-template-columns: 1fr 2fr;
 }
 
 .chart-card {
@@ -238,13 +264,57 @@
   transition: background-color 0.25s ease, border-color 0.25s ease;
 }
 
+.chart-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
 .chart-title {
   font-family: 'DM Mono', monospace;
   font-size: 10px;
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--text-muted);
-  margin: 0 0 20px;
+  margin: 0;
+}
+
+/* standalone chart-title (not inside chart-header) keeps bottom margin */
+.chart-card > .chart-title {
+  margin-bottom: 20px;
+}
+
+.chart-mode-toggle {
+  display: flex;
+  gap: 0;
+  border: 1px solid var(--border);
+}
+
+.mode-btn {
+  background: transparent;
+  border: none;
+  padding: 4px 10px;
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: background-color 0.15s, color 0.15s;
+}
+
+.mode-btn + .mode-btn {
+  border-left: 1px solid var(--border);
+}
+
+.mode-btn.active {
+  background: var(--accent);
+  color: #fff;
+}
+
+.mode-btn:not(.active):hover {
+  color: var(--text);
 }
 
 .chart-body {
@@ -252,9 +322,88 @@
   height: 260px;
 }
 
+/* ─── Top Routes ─────────────────────────────────────────── */
+.top-routes {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.top-route-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.top-route-meta {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.top-route-pattern {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+.top-route-count {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.top-route-bar-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 4px;
+  position: relative;
+}
+
+.top-route-bar-wrap {
+  height: auto;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.top-route-bar {
+  height: 3px;
+  background: var(--accent);
+  opacity: 0.45;
+  min-width: 2px;
+  transition: width 0.4s ease;
+}
+
+.top-route-pct {
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  color: var(--text-muted);
+  flex-shrink: 0;
+  opacity: 0.7;
+}
+
+.empty-hint {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  color: var(--text-muted);
+  opacity: 0.5;
+  margin: 0;
+  text-align: center;
+  padding: 24px 0;
+}
+
 @media (max-width: 900px) {
   .stats-row { grid-template-columns: repeat(2, 1fr); }
   .charts-row { grid-template-columns: 1fr; }
+  .charts-row--secondary { grid-template-columns: 1fr; }
 }
 
 /* ─── Refresh controls ───────────────────────────────────── */

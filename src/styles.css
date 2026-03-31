@@ -1,5 +1,5 @@
-@import 'tailwindcss';
 @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Outfit:wght@300;400;500&display=swap');
+@import 'tailwindcss';
 
 /* Class-based dark mode — ThemeService toggles .dark on <html> */
 @custom-variant dark (&:where(.dark, .dark *));
