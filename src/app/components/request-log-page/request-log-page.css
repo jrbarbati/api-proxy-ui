@@ -276,14 +276,6 @@ tbody tr:last-child td {
 }
 
 /* ─── Cell types ──────────────────────────────────────────── */
-.cell-url {
-  font-family: 'DM Mono', monospace;
-  font-size: 11px;
-  max-width: 320px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
 
 .cell-date {
   font-family: 'DM Mono', monospace;
@@ -326,6 +318,16 @@ tbody tr:last-child td {
   font-size: 9px;
   opacity: 0.55;
   margin-top: 2px;
+}
+
+.route-unmatched {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 10px;
+  opacity: 0.45;
+  font-style: italic;
 }
 
 /* ─── Method badge ────────────────────────────────────────── */

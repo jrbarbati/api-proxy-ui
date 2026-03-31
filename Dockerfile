@@ -1,35 +1,25 @@
 # Stage 1: Build Angular app
 FROM node:20-alpine AS build
 
-# Set working directory
 WORKDIR /app
 
-# Copy package files first (better caching)
 COPY package*.json ./
+RUN npm ci
 
-# Install dependencies
-RUN npm install
-
-# Copy rest of the app
 COPY . .
-
-# Build Angular app (production)
 RUN npm run build -- --configuration production
 
 # Stage 2: Serve with Nginx
 FROM nginx:alpine
 
-# Remove default nginx config
+RUN apk add --no-cache gettext
+
 RUN rm -rf /usr/share/nginx/html/*
 
-# Copy build output
-COPY --from=build /app/dist/ /usr/share/nginx/html
+COPY --from=build /app/dist/api-proxy-ui/browser/ /usr/share/nginx/html
+COPY nginx.conf /etc/nginx/conf.d/default.conf.template
 
-# Copy custom nginx config (optional but recommended)
-COPY nginx.conf /etc/nginx/conf.d/default.conf
-
-# Expose port
 EXPOSE 80
 
-# Start nginx
-CMD ["nginx", "-g", "daemon off;"]
+# Substitute $BACKEND_URL at startup then launch nginx
+CMD ["/bin/sh", "-c", "envsubst '${BACKEND_URL}' < /etc/nginx/conf.d/default.conf.template > /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'"]
